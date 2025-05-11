@@ -1,29 +1,130 @@
-
----
-
-## 📄 `.gitignore`
-
-```gitignore
-# Bytecode
+### Python ###
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
 
-# Environments
+# Virtual environment
 venv/
-.env
-*.env
+.env/
+.env.local
+.env.development
+.env.production
+.env.test
+.env*.local
 
-# Terraform
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+### Node/React ###
+# Dependencies
+node_modules/
+jspm_packages/
+
+# Testing
+/coverage
+
+# Production
+build/
+dist/
+
+# Misc
+.npm
+.eslintcache
+*.tgz
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### Terraform ###
 *.tfstate
-*.tfstate.backup
+*.tfstate.*
+*.tfvars
 .terraform/
 terraform.tfstate.d/
+.terraform.lock.hcl
 
-# Logs
-*.log
+### Kubernetes ###
+kubeconfig.yaml
+kubeconfig_*.yaml
 
-# Editors & OS
+### Flask ###
+instance/
+*.sqlite
+*.sqlite3
+*.db
+
+### IDE ###
 .vscode/
 .idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+### OS ###
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+
+### Logs ###
+*.log
+logs/
+*.logs
+
+### Python specific ###
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+### Misc ###
+*.bak
+*.tmp
+*~
+*.orig
+*.patch
+*.rej
