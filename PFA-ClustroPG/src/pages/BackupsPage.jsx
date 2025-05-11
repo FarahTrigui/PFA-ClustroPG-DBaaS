@@ -58,8 +58,35 @@ export default function BackupsPage() {
     return <span className={`badge ${statusMap[status] || 'bg-secondary'}`}>{status}</span>;
   };
 
-  if (loading) return <div>Loading backups...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) {
+    return (
+      <div className="dashboard-layout">
+        <Sidebar activeTab="Backups" />
+        <div className="dashboard-content">
+          <TopBar />
+          <div className="d-flex justify-content-center mt-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-layout">
+        <Sidebar activeTab="Backups" />
+        <div className="dashboard-content">
+          <TopBar />
+          <div className="alert alert-danger m-4">
+            Error loading backups: {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-layout">
