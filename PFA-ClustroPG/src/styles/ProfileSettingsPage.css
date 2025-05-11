@@ -1,0 +1,10 @@
+.scrollable-content {
+  overflow-y: auto;
+  max-height: calc(100vh - 80px); /* adjust if TopBar height changes */
+}
+
+.avatar-box {
+  background-color: #8B8B8B;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Créer une base PostgreSQL</title>
+</head>
+<body>
+<h2>Créer une base PostgreSQL</h2>
+
+<form id="dbForm">
+  <label>Nom du projet :</label><br>
+  <input type="text" id="projectName" required><br><br>
+
+  <label>Niveau de charge attendu :</label><br>
+  <select id="loadLevel">
+    <option value="low">Faible</option>
+    <option value="medium" selected>Moyen</option>
+    <option value="high">Élevé</option>
+  </select><br><br>
+
+  <label>Souhaitez-vous des sauvegardes ?</label><br>
+  <select id="backupEnabled">
+    <option value="yes">Oui</option>
+    <option value="no" selected>Non</option>
+  </select><br><br>
+
+  <div id="backupOptions" style="display: none;">
+    <label>Fréquence de sauvegarde :</label><br>
+    <select id="backupFrequency">
+      <option value="daily">Quotidienne</option>
+      <option value="weekly">Hebdomadaire</option>
+    </select><br><br>
+
+    <label>Durée de rétention des données (jours) :</label><br>
+    <input type="number" id="retentionDays" min="1" value="7"><br><br>
+  </div>
+
+  <button type="submit">Créer la base</button>
+</form>
+
+<script>
+document.getElementById('backupEnabled').addEventListener('change', function() {
+  document.getElementById('backupOptions').style.display = this.value === 'yes' ? 'block' : 'none';
+});
+
+document.getElementById('dbForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const payload = {
+    project_name: document.getElementById('projectName').value,
+    load_level: document.getElementById('loadLevel').value,
+    backup_enabled: document.getElementById('backupEnabled').value === 'yes',
+    backup_frequency: document.getElementById('backupFrequency').value,
+    retention_days: document.getElementById('retentionDays').value
+  };
+
+  fetch('/create-database', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => alert(data.message || data.error))
+  .catch(err => alert('Erreur: ' + err));
+});
+  fetch('/get-clusters?client=amen')
+  .then(response => response.json())
+  .then(data => {
+    console.log(data); // Affiche uniquement les clusters contenant "amen"
+    // ici tu les affiches dans ton HTML
+  });
+
+</script>
+</body>
+</html>

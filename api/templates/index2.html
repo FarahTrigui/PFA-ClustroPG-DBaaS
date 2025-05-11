@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Déploiement PostgreSQL</title>
+</head>
+<body>
+<h2>Créer une nouvelle base PostgreSQL</h2>
+<input type="text" id="dbName" placeholder="Nom de la base de données">
+<button onclick="createDB()">Create Database</button>
+
+<script>
+function createDB() {
+    const dbName = document.getElementById('dbName').value;
+    fetch('http://127.0.0.1:5000/create-database', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ db_name: dbName })
+})
+
+    .then(res => res.json())
+    .then(data => alert(data.message || data.error))
+    .catch(err => alert('Erreur: ' + err));
+}
+</script>
+</body>
+</html>

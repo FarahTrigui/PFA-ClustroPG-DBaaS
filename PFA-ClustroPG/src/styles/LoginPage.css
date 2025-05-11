@@ -1,0 +1,56 @@
+.login-wrapper {
+    background-color: #3a3e45;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  
+  .login-card {
+    background-color: #fff;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .login-title {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #187bcd;
+  }
+  
+  .form-control {
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+  
+  .password-toggle {
+    position: absolute;
+    top: 38px;
+    right: 12px;
+    font-size: 0.85rem;
+    z-index: 2;
+  }
+  
+  .btn-primary {
+    background-color: #c2d9f9;
+    color: #3c3c3c;
+    font-weight: 600;
+    border: none;
+    border-radius: 999px;
+  }
+  
+  .btn-primary:hover {
+    background-color: #a5c6f2;
+  }
+  
+  a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }

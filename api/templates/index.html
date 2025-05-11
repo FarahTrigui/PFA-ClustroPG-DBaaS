@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Déploiement PostgreSQL</title>
+</head>
+<body>
+  <h1>Déployer un cluster PostgreSQL</h1>
+  <form id="deploy-form">
+    <label>Nom du cluster :</label>
+    <input type="text" id="cluster_name" required><br><br>
+    
+    <label>Nombre d'instances :</label>
+    <input type="number" id="instance_count" value="2"><br><br>
+    
+    <label>Taille du stockage :</label>
+    <input type="text" id="storage_size" value="1Gi"><br><br>
+    
+    <label>StorageClass :</label>
+    <input type="text" id="storage_class" value="local-path"><br><br>
+    
+    <button type="submit">Déployer</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    document.getElementById("deploy-form").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const response = await fetch("/deploy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cluster_name: document.getElementById("cluster_name").value,
+          instance_count: document.getElementById("instance_count").value,
+          storage_size: document.getElementById("storage_size").value,
+          storage_class: document.getElementById("storage_class").value
+        })
+      });
+
+      const data = await response.json();
+      document.getElementById("result").textContent = JSON.stringify(data);
+    });
+  </script>
+</body>
+</html>

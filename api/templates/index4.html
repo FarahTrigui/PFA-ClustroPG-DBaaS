@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Cluster Manager</title>
+    <script>
+        function fetchClusters() {
+            const client = document.getElementById("client_name").value;
+            fetch(`/get-clusters?client=${client}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear previous cluster list
+                    let clusterList = document.getElementById("cluster-list");
+                    clusterList.innerHTML = '';
+
+                    // Check if there are any clusters in the data
+                    if (data && data.length > 0) {
+                        data.forEach(cluster => {
+                            let clusterItem = document.createElement("li");
+                            clusterItem.innerText = `${cluster.name} - ${cluster.status} - ${cluster.instances}`;
+                            clusterList.appendChild(clusterItem);
+                        });
+                    } else {
+                        clusterList.innerHTML = '<li>No clusters found</li>';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function createDatabase() {
+            const client_name = document.getElementById("client_name").value;
+            const client_company = document.getElementById("client_company").value;
+            const db_name = document.getElementById("db_name").value;
+            const db_size = document.getElementById("db_size").value;
+            const backup_needed = document.querySelector('input[name="backup"]:checked').value;
+            const backup_frequency = document.getElementById("backup_frequency").value;
+
+            const requestData = {
+                client_name: client_name,
+                client_company: client_company,
+                db_name: db_name,
+                db_size: db_size,
+                backup_needed: backup_needed,
+                backup_frequency: backup_frequency
+            };
+
+            fetch('/create-database', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);  // Show the creation message
+
+                    // Refresh the cluster list
+                    fetchClusters();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+    <h1>Manage PostgreSQL Clusters</h1>
+
+    <!-- Form to create a new database -->
+    <h2>Create a New Database</h2>
+    <form onsubmit="event.preventDefault(); createDatabase();">
+        <label for="client_name">Client Name:</label>
+        <input type="text" id="client_name" required><br><br>
+        
+        <label for="client_company">Client Company:</label>
+        <input type="text" id="client_company" required><br><br>
+
+        <label for="db_name">Database Name:</label>
+        <input type="text" id="db_name" required><br><br>
+
+        <label for="db_size">Database Size:</label>
+        <select id="db_size">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="big">Big</option>
+            <option value="very big">Very Big</option>
+        </select><br><br>
+
+        <label>Backup Needed:</label>
+        <input type="radio" name="backup" value="yes" required> Yes
+        <input type="radio" name="backup" value="no" required> No<br><br>
+
+        <label for="backup_frequency">Backup Frequency:</label>
+        <input type="text" id="backup_frequency" required><br><br>
+
+        <button type="submit">Create Database</button>
+    </form>
+
+    <hr>
+
+    <!-- Displaying the list of clusters -->
+    <h2>Clusters of Client: <span id="client-name-display"></span></h2>
+    <button onclick="fetchClusters()">Fetch Clusters</button>
+    <ul id="cluster-list"></ul>
+
+</body>
+</html>
