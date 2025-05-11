@@ -1,0 +1,29 @@
+
+---
+
+## 📄 `.gitignore`
+
+```gitignore
+# Bytecode
+__pycache__/
+*.py[cod]
+
+# Environments
+venv/
+.env
+*.env
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+terraform.tfstate.d/
+
+# Logs
+*.log
+
+# Editors & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
