@@ -72,13 +72,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-### Terraform ###
+# Terraform
 *.tfstate
 *.tfstate.*
 *.tfvars
 .terraform/
 terraform.tfstate.d/
 .terraform.lock.hcl
+**/terraform_states/
+tfplan
 
 ### Kubernetes ###
 kubeconfig.yaml
