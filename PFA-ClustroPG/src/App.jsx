@@ -9,6 +9,8 @@ import ProfilePage from './pages/ProfilePage';
 import ClustersPage from './pages/ClustersPage';
 import { useAuth } from './context/AuthContext';
 import BackupsPage from './pages/BackupsPage';
+import RestorePage from './pages/RestorePage';
+
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -71,6 +73,14 @@ function App() {
           element={
             <ProtectedRoute>
               <BackupsPage />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/restores"
+          element={
+            <ProtectedRoute>
+              <RestorePage />
             </ProtectedRoute>
           }
         />

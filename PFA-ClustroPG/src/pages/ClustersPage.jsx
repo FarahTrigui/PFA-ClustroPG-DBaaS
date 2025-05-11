@@ -121,7 +121,7 @@ export default function ClustersPage() {
       <Sidebar activeTab="Clusters" />
       <div className="dashboard-content">
         <TopBar clientName={clientName} />
-        <div className="p-5">
+        <div className="p-5 scrollable-content">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h4 className="text-primary fw-bold">YOUR CLUSTERS</h4>
