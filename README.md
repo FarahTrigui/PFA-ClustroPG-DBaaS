@@ -21,7 +21,7 @@ The project abstracts away the operational complexity of Kubernetes and offers a
 | Operator         | CloudNativePG (CNPG) | CRD-based PostgreSQL management in K8s           |
 | Storage          | MinIO (S3 API)     | Backup destination (WAL & base backups)            |
 | State Management | tfstate per cluster| Cluster config stored in S3/MinIO after apply      |
-| UI (Optional)    | HTML/JS (via Flask)| Enhanced user experience, no YAML or kubectl needed|
+| UI               | React/JS (via Flask)| Enhanced user experience, no YAML or kubectl needed|
 
 ---
 
