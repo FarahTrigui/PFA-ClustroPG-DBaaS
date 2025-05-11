@@ -60,8 +60,8 @@ Abstraction/
 ## 🧪 Quick Start
 
 ```bash
-git clone https://github.com/FarahTrigui/PFA-DBaaS.git
-cd PFA-DBaaS
+git clone https://github.com/FarahTrigui/PFA-ClustroPG-DBaaS.git
+cd PFA-ClustroPG-DBaaS
 pip install -r requirements.txt
 
 export MINIO_ACCESS_KEY=your-access-key
