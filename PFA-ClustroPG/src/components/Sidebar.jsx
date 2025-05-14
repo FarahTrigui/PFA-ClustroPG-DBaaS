@@ -40,16 +40,16 @@ export default function Sidebar({ activeTab }) {
           className="sidebar p-3"
           style={{ maxHeight: '100vh', overflowY: 'auto' }}
         >
-          {isMobile && (
-            <div className="sidebar-header d-flex justify-content-between align-items-center">
-              <a className="logo" href="/dashboard">
-                <h4 className="fw-bold mb-0">ClustroPG</h4>
-              </a>
+          <div className="sidebar-header d-flex justify-content-between align-items-center">
+            <a className="logo" href="/dashboard">
+              <h4 className="fw-bold mb-0">ClustroPG</h4>
+            </a>
+            {isMobile && (
               <button className="burger-btn close-btn" onClick={() => setShowSidebar(false)}>
                 ✕
               </button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* DASHBOARD SECTION */}
           <div className="section">
@@ -57,7 +57,7 @@ export default function Sidebar({ activeTab }) {
               className="section-header d-flex justify-content-between align-items-center"
               onClick={() => setShowDashboard(!showDashboard)}
             >
-              <span className="fw-bold">Dashboard</span>
+              <a href="/dashboard"><span className="fw-bold" >Dashboard</span></a>
               <span>{showDashboard ? '▲' : '▼'}</span>
             </div>
             {showDashboard && (
