@@ -42,7 +42,7 @@ export default function Sidebar({ activeTab }) {
         >
           <div className="sidebar-header d-flex justify-content-between align-items-center">
             <a className="logo" href="/dashboard">
-              <h4 className="fw-bold mb-0">ClustroPG</h4>
+              <h4 className="fw-bold mb-3">ClustroPG</h4>
             </a>
             {isMobile && (
               <button className="burger-btn close-btn" onClick={() => setShowSidebar(false)}>
@@ -52,6 +52,7 @@ export default function Sidebar({ activeTab }) {
           </div>
 
           {/* DASHBOARD SECTION */}
+          <hr></hr>
           <div className="section">
             <div
               className="section-header d-flex justify-content-between align-items-center"
