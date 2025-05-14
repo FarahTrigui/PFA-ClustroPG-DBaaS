@@ -81,7 +81,7 @@ export default function ClustersPage() {
     return (
       <div className="dashboard-layout">
         <Sidebar activeTab="Clusters" />
-        <div className="dashboard-content">
+        <div className="dashboard-content  scrollable-content">
           <TopBar />
           <div className="d-flex justify-content-center mt-5">
             <div className="spinner-border text-primary" role="status">
@@ -110,7 +110,7 @@ export default function ClustersPage() {
   return (
     <div className="dashboard-layout">
       <Sidebar activeTab="Clusters" />
-      <div className="dashboard-content">
+      <div className="dashboard-content  scrollable-content">
         <TopBar clientName={clientName} />
         <div className="p-5 scrollable-content">
           <div className="d-flex justify-content-between align-items-center mb-4">

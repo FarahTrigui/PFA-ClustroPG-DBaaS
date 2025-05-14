@@ -7,9 +7,9 @@ export default function RestorePage() {
   return (
     <div className="dashboard-layout">
       <Sidebar activeTab="Restore" />
-      <div className="dashboard-content">
+      <div className="dashboard-content scrollable-content">
         <TopBar />
-        <div className="restore-page-container scrollable-content">
+        <div className="restore-page-container ">
           <h1 className="restore-title text-primary fw-bold">YOUR Restores</h1>
           <p className="restore-subtitle fw-semibold">
             Welcome to Clustro, manage your DB you’re the maestro!

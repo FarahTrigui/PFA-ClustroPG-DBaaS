@@ -67,7 +67,7 @@ const fetchBackups = async () => {
     return (
       <div className="dashboard-layout">
         <Sidebar activeTab="Backups" />
-        <div className="dashboard-content">
+        <div className="dashboard-content  scrollable-content">
           <TopBar />
           <div className="d-flex justify-content-center mt-5">
             <div className="spinner-border text-primary" role="status">
@@ -96,10 +96,10 @@ const fetchBackups = async () => {
   return (
     <div className="dashboard-layout">
       <Sidebar activeTab="Backups" />
-      <div className="dashboard-content">
+      <div className="dashboard-content  scrollable-content">
         <TopBar />
         <div className="scroll-wrapper">
-        <div className="p-5 scrollable-content">
+        <div className="p-5 ">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h4 className="text-primary fw-bold">YOUR Backups</h4>
