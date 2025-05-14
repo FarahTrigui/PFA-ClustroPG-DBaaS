@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
@@ -5,6 +6,7 @@ import '../styles/ClustersPage.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function ClustersPage() {
+  const { user } = useAuth();
   const [clusters, setClusters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,14 +14,12 @@ export default function ClustersPage() {
   const location = useLocation();
 
   // Extract client name from URL or state
-  const clientName = new URLSearchParams(location.search).get('client') || 
-                    location.state?.clientName || 
-                    'default';
+  const clientName = user?.username;
 
   useEffect(() => {
     const fetchClusters = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/get-clusters?client=${clientName}`);
+        const response = await fetch(`http://localhost:5000/get-clusters?client=${user?.username}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -65,26 +65,17 @@ export default function ClustersPage() {
   };
 
   const getStatusBadge = (status) => {
-    if (!status || typeof status !== 'string') {
-      return <span className="badge bg-secondary">Unknown</span>;
-    }
-    
-    const statusMap = {
-      'healthy': 'bg-success',
-      'running': 'bg-success',
-      'unhealthy': 'bg-danger',
-      'failed': 'bg-danger',
-      'pending': 'bg-warning text-dark',
-      'init': 'bg-info text-dark'
-    };
-    
-    const normalizedStatus = status.toLowerCase();
-    const badgeClass = statusMap[normalizedStatus] || 'bg-secondary';
-    
-    return <span className={`badge ${badgeClass}`}>
-      {status}
-    </span>;
-  };
+  if (!status) return <span className="badge bg-secondary">Unknown</span>;
+
+  const normalizedStatus = status.toLowerCase();
+  const isHealthy = normalizedStatus.includes("healthy");
+
+  return (
+    <span className={`badge ${isHealthy ? "bg-success" : "bg-warning"}`}>
+      {isHealthy ? "Healthy" : status}
+    </span>
+  );
+};
 
   if (loading) {
     return (

@@ -2,3 +2,9 @@
     overflow-y: auto;
     max-height: calc(100vh - 80px);
   }
+
+  .scroll-wrapper {
+    overflow-x: auto;
+    width: 100%;
+  }
+  

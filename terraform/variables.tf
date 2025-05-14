@@ -45,3 +45,14 @@ variable "backup_schedule" {
   description = "Cron schedule for backups"
   type        = string
 }
+variable "enable_monitoring" {
+  description = "Enable PodMonitor for Prometheus monitoring"
+  type        = bool
+  default     = true
+}
+
+variable "monitoring_namespace" {
+  description = "Namespace where monitoring is installed"
+  type        = string
+  default     = "monitoring"
+}

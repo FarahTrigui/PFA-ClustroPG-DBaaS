@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
@@ -5,26 +6,30 @@ import '../styles/BackupsPage.css';
 import { useNavigate } from 'react-router-dom';
 
 export default function BackupsPage() {
+  const { user } = useAuth();
   const [backups, setBackups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const clientName = user?.username;
 
   useEffect(() => {
-    const fetchBackups = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/get-backups');
-        if (!response.ok) {
-          throw new Error('Failed to fetch backups');
-        }
-        const data = await response.json();
-        setBackups(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+// In your fetchBackups function:
+const fetchBackups = async () => {
+  try {
+    const response = await fetch(`http://localhost:5000/get-backups?client=${user?.username}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch backups');
+    }
+    const data = await response.json();
+    setBackups(Array.isArray(data) ? data : []);  // Ensure it's an array
+  } catch (err) {
+    setError(err.message);
+    setBackups([]);  // Reset backups on error
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchBackups();
   }, []);
@@ -93,6 +98,7 @@ export default function BackupsPage() {
       <Sidebar activeTab="Backups" />
       <div className="dashboard-content">
         <TopBar />
+        <div className="scroll-wrapper">
         <div className="p-5 scrollable-content">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -109,6 +115,7 @@ export default function BackupsPage() {
             </button>
           </div>
 
+          
           <table className="table table-bordered text-center">
             <thead className="table-light">
               <tr>
@@ -146,6 +153,7 @@ export default function BackupsPage() {
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>

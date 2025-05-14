@@ -19,12 +19,19 @@ resource "kubernetes_manifest" "pg_cluster" {
     metadata = {
       name      = var.cluster_name
       namespace = "default"
+      labels = {
+        "cnpg.io/monitoring" = "true"
+      }
     }
     spec = {
       instances = var.instance_count
       storage = {
         size         = var.storage_size
         storageClass = var.storage_class
+      }
+      # Correct monitoring configuration for CNPG
+      monitoring = {
+        enablePodMonitor = true
       }
       backup = var.backup_enabled ? {
         barmanObjectStore = {
@@ -68,3 +75,11 @@ resource "kubernetes_manifest" "pg_scheduled_backup" {
     }
   }
 }
+resource "null_resource" "patch_podmonitor" {
+  depends_on = [kubernetes_manifest.pg_cluster]
+
+  provisioner "local-exec" {
+    command = "kubectl label podmonitor ${var.cluster_name} release=cluster-metrics -n default --overwrite"
+  }
+}
+

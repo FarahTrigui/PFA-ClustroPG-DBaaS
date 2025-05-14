@@ -7,6 +7,7 @@ from flask_cors import CORS
 import kubernetes.client
 from kubernetes import config
 import subprocess
+from flask import request
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
@@ -19,6 +20,9 @@ def index():
 
 @app.route('/get-clusters', methods=['GET'])
 def get_clusters():
+    client_name = request.args.get('client')
+    print(f"🔍 Client name: {client_name}")
+
     try:
         config.load_kube_config()
         api = kubernetes.client.CustomObjectsApi()
@@ -27,12 +31,34 @@ def get_clusters():
             version="v1",
             plural="clusters"
         )
-        return jsonify(clusters["items"])
+
+        filtered = []
+        for cluster in clusters.get("items", []):
+            metadata = cluster.get("metadata", {})
+            status = cluster.get("status", {})
+            
+            # Skip if client_name doesn't match
+            if client_name and client_name.lower() not in metadata.get("name", "").lower():
+                continue
+
+            filtered.append({
+                "name": metadata.get("name"),
+                "status": status.get("phase", "Unknown"),  # "Cluster in healthy state" → "Healthy"
+                "instances": status.get("instances", 0),
+                "ready": status.get("readyInstances", 0),
+                "primary": status.get("primaryInstance", "N/A"),
+                "created": metadata.get("creationTimestamp", "Unknown"),
+            })
+
+        return jsonify(filtered)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/get-backups', methods=['GET'])
 def get_backups():
+    client_name = request.args.get('client')
+    print(f"🔍 Client name: {client_name}")
     try:
         config.load_kube_config()
         api = kubernetes.client.CustomObjectsApi()
@@ -41,15 +67,45 @@ def get_backups():
             version="v1",
             plural="backups"
         )
-        return jsonify(backups["items"])
+
+        filtered = []  # <-- This was outside the try block
+        for backup in backups.get("items", []):
+            metadata = backup.get("metadata", {})
+            spec = backup.get("spec", {})
+            status = backup.get("status", {})
+            
+            # Filtering logic (if needed)
+            if client_name and client_name.lower() not in metadata.get("name", "").lower():
+                continue
+
+            filtered.append({
+                "metadata": {
+                    "name": metadata.get("name"),
+                    "creationTimestamp": metadata.get("creationTimestamp"),
+                    "labels": metadata.get("labels", {}),
+                    "annotations": metadata.get("annotations", {})
+                },
+                "spec": {
+                    "cluster": {
+                        "name": spec.get("cluster", {}).get("name", "")
+                    }
+                },
+                "status": status
+            })
+
+        print(f"✅ Found {len(filtered)} matching backups")
+        return jsonify(filtered)  # Directly return the array
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 @app.route('/trigger-backup', methods=['POST'])
 def trigger_backup():
     data = request.get_json()
     cluster_name = data.get('clusterName')
-    
+
     backup_manifest = {
         "apiVersion": "postgresql.cnpg.io/v1",
         "kind": "Backup",
@@ -64,7 +120,7 @@ def trigger_backup():
             "method": "barmanObjectStore"
         }
     }
-    
+
     try:
         api = kubernetes.client.CustomObjectsApi()
         created_backup = api.create_namespaced_custom_object(
@@ -142,7 +198,7 @@ def create_database():
             '-var', f's3_bucket={s3_bucket}',
             '-var', f's3_path={s3_path}',
             '-var', f's3_endpoint={s3_endpoint}',
-	    '-var', f'backup_enabled={str(backup_needed).lower()}',
+            '-var', f'backup_enabled={str(backup_needed).lower()}',
             '-var', f'backup_schedule={backup_schedule}',
             '-auto-approve'
         ]
@@ -160,7 +216,7 @@ def create_database():
                 'stdout': result.stdout,
                 'stderr': result.stderr
             }), 500
-	        # Upload the tfstate to MinIO
+                # Upload the tfstate to MinIO
         tfstate_file = os.path.join(cluster_dir, 'terraform.tfstate')
 
         s3 = boto3.client(
@@ -175,7 +231,7 @@ def create_database():
             Bucket=s3_bucket,
             Key=f"{s3_path}terraform.tfstate"
         )
-	# Always delete state files (safe)
+        # Always delete state files (safe)
         for file in ['terraform.tfstate', 'terraform.tfstate.backup']:
             path = os.path.join(cluster_dir, file)
             if os.path.exists(path):
