@@ -93,6 +93,7 @@ export default function BackupsPage() {
       <Sidebar activeTab="Backups" />
       <div className="dashboard-content">
         <TopBar />
+        <div className="scroll-wrapper">
         <div className="p-5 scrollable-content">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -109,6 +110,7 @@ export default function BackupsPage() {
             </button>
           </div>
 
+          
           <table className="table table-bordered text-center">
             <thead className="table-light">
               <tr>
@@ -146,6 +148,7 @@ export default function BackupsPage() {
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>
