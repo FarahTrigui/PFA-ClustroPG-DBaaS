@@ -1,0 +1,8 @@
+.cpu-mem-charts {
+    flex-direction: row;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
+;
+}

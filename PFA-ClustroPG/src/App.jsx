@@ -13,6 +13,7 @@ import { useAuth } from './context/AuthContext';
 import BackupsPage from './pages/BackupsPage';
 import RestorePage from './pages/RestorePage';
 import MonitoringPage from './pages/MonitoringPage';
+import MonitoringStaticPage from './pages/MonitoringStaticPage';
 import TablesPage from './pages/TablesPage';
 
 
@@ -34,6 +35,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+      <Route path="/monitoring-static" element={<MonitoringStaticPage />} />
         <Route
           path="/"
           element={
