@@ -1,0 +1,8 @@
+USER-SUPPLIED VALUES:
+prometheus:
+  prometheusSpec:
+    podMonitorNamespaceSelector:
+      any: true
+    podMonitorSelector:
+    - ""
+    podMonitorSelectorNilUsesHelmValues: false

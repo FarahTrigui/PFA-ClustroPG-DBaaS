@@ -8,12 +8,48 @@ import kubernetes.client
 from kubernetes import config
 import subprocess
 from flask import request
+from prometheus_api_client import PrometheusConnect 
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
 cluster_name = ""
+prom = PrometheusConnect(url="http://localhost:9090", disable_ssl=True)
+@app.route('/metrics/cluster', methods=['GET'])
+def get_cluster_metrics():
+    cluster_name = request.args.get('cluster_name')
 
+    try:
+        # System metrics
+        cpu_query = f'sum(rate(container_cpu_usage_seconds_total{{pod=~"{cluster_name}-.*"}}[5m])) by (pod)'
+        memory_query = f'container_memory_working_set_bytes{{pod=~"{cluster_name}-.*"}}'
+        
+        # PostgreSQL-specific metrics
+        postgres_metrics = {
+            "connections": prom.custom_query(
+                f'pg_stat_activity_count{{cnpg_cluster="{cluster_name}"}}'
+            ),
+            "replication_lag": prom.custom_query(
+                f'pg_replication_lag{{cnpg_cluster="{cluster_name}"}}'
+            ),
+            "transaction_rate": prom.custom_query(
+                f'rate(pg_stat_database_xact_commit_total{{cnpg_cluster="{cluster_name}"}}[5m])'
+            ),
+            "wal_size": prom.custom_query(
+                f'pg_wal_size_bytes{{cnpg_cluster="{cluster_name}"}}'
+            )
+        }
 
+        return jsonify({
+            "system": {
+                "cpu": prom.custom_query(cpu_query),
+                "memory": prom.custom_query(memory_query)
+            },
+            "postgres": postgres_metrics
+        })
+
+    except Exception as e:
+        app.logger.error(f"Metrics error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 @app.route('/')
 def index():
     return render_template('index4.html')
