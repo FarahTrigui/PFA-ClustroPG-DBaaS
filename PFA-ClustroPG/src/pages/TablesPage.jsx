@@ -6,7 +6,7 @@ import '../styles/TablesPage.css';
 export default function TablesPage() {
   return (
     <div className="dashboard-layout">
-      <Sidebar activeTab="Clusters" />
+      <Sidebar activeTab="Tables" />
       <div className="dashboard-content">
         <TopBar />
 
