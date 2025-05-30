@@ -66,7 +66,7 @@ export default function Sidebar({ activeTab }) {
                 <SidebarItem icon={<FaDatabase />} label="Clusters" to="/clusters" activeTab={activeTab} />
                 <SidebarItem icon={<FaUsers />} label="Backups" to="/backups" activeTab={activeTab} />
                 <SidebarItem icon={<FaDownload />} label="Restore" to="/restores" activeTab={activeTab} />
-                <SidebarItem icon={<FaChartBar />} label="Monitoring" activeTab={activeTab} />
+                <SidebarItem icon={<FaChartBar />} label="Monitoring" to="/monitoring" activeTab={activeTab} />
                 <SidebarItem icon={<FaCog />} label="Settings" activeTab={activeTab} />
               </div>
             )}

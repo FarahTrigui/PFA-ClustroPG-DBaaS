@@ -1,0 +1,119 @@
+.monitoring-container {
+  color: #1f1f1f;
+  min-height: 100vh;
+}
+
+.monitoring-title {
+  color: #00b7ff;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  padding: 2rem 2rem;
+}
+
+/* Remove rigid layout since Bootstrap now handles structure */
+.monitoring-panels,
+.monitoring-info,
+.features {
+  display: contents;
+}
+
+/* Optional: style reused Bootstrap cards for consistency */
+.card.bg-dark {
+  background-color: #ffffff !important;
+  color: #1f1f1f !important;
+  border: 1px solid rgba(0,0,0,0.125);
+  border-radius: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Sleep rings remain the same */
+.sleep-ring {
+  border-radius: 50%;
+  position: absolute;
+}
+.sleep-ring-score {
+  width: 155px;
+  height: 155px;
+  background: #3733A7;
+}
+.sleep-ring-quality {
+  width: 120px;
+  height: 120px;
+  background: #098445;
+  top: 18px;
+  left: 18px;
+}
+.sleep-ring-goal {
+  width: 88px;
+  height: 88px;
+  background: #F09708;
+  top: 34px;
+  left: 34px;
+}
+.sleep-ring-labels {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.sleep-time {
+  font-weight: 900;
+  font-size: 12px;
+}
+.sleep-subtext {
+  font-size: 6px;
+  /* Use Bootstrap's default muted color */
+  color: #6c757d;
+}
+
+/* Donut charts for performance card */
+.donut-chart {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  margin: 0 auto 0.5rem;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--fill-color, #7d3cff) calc(var(--percentage) * 1%),
+    rgba(140,139,141,0.15) 0
+  );
+}
+
+.donut-1 {
+  --fill-color: #7d3cff;
+}
+.donut-2 {
+  --fill-color: #098445;
+}
+.donut-3 {
+  --fill-color: #F09708;
+}
+.donut-4 {
+  --fill-color: #3733A7;
+}
+
+.donut-chart::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 60%;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Center percentage label inside donut charts */
+.donut-chart .donut-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f1f1f;
+  z-index: 2; /* Make sure it's above the white circle */
+}

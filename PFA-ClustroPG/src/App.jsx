@@ -1,4 +1,6 @@
 import React from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import DashboardPage from './pages/DashboardPage';
 import SignUpPage from './pages/SignUpPage';
@@ -10,6 +12,8 @@ import ClustersPage from './pages/ClustersPage';
 import { useAuth } from './context/AuthContext';
 import BackupsPage from './pages/BackupsPage';
 import RestorePage from './pages/RestorePage';
+import MonitoringPage from './pages/MonitoringPage';
+
 
 
 function ProtectedRoute({ children }) {
@@ -105,6 +109,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ProfileSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/monitoring"
+          element={
+            <ProtectedRoute>
+              <MonitoringPage />
             </ProtectedRoute>
           }
         />
