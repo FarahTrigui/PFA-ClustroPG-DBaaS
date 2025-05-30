@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import '../styles/MonitoringPage.css';
@@ -10,7 +11,12 @@ export default function MonitoringPage() {
       <div className="dashboard-content scrollable-content">
         <TopBar />
         <div className="monitoring-container" style={{ backgroundColor: 'transparent' }}>
-          <h1 className="monitoring-title">YOUR Monitorings</h1>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h1 className="monitoring-title">YOUR Monitorings</h1>
+            <Link to="/dashboard" className="btn-new-metrics">
+              See My Metrics
+            </Link>
+          </div>
 
           <div className="container-fluid">
             <div className="row m-5">
