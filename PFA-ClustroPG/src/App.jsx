@@ -13,6 +13,8 @@ import { useAuth } from './context/AuthContext';
 import BackupsPage from './pages/BackupsPage';
 import RestorePage from './pages/RestorePage';
 import MonitoringPage from './pages/MonitoringPage';
+import TablesPage from './pages/TablesPage';
+
 
 
 
@@ -69,6 +71,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ClustersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tables"
+          element={
+            <ProtectedRoute>
+              <TablesPage />
             </ProtectedRoute>
           }
         />

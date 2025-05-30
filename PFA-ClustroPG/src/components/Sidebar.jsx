@@ -6,7 +6,8 @@ import {
   FaChartBar,
   FaCog,
   FaUser,
-  FaCogs
+  FaCogs,
+  FaCubes
 } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
 import '../styles/Sidebar.css';
@@ -63,7 +64,8 @@ export default function Sidebar({ activeTab }) {
             </div>
             {showDashboard && (
               <div className="section-items">
-                <SidebarItem icon={<FaDatabase />} label="Clusters" to="/clusters" activeTab={activeTab} />
+                <SidebarItem icon={<FaCubes />} label="Clusters" to="/clusters" activeTab={activeTab} />
+                <SidebarItem icon={<FaDatabase />} label="Tables" to="/tables" activeTab={activeTab} />
                 <SidebarItem icon={<FaUsers />} label="Backups" to="/backups" activeTab={activeTab} />
                 <SidebarItem icon={<FaDownload />} label="Restore" to="/restores" activeTab={activeTab} />
                 <SidebarItem icon={<FaChartBar />} label="Monitoring" to="/monitoring" activeTab={activeTab} />
