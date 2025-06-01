@@ -124,7 +124,7 @@ export default function ClustersPage() {
               className="btn btn-info text-white px-4 rounded-pill"
               onClick={() => navigate('/create-cluster', { state: { clientName } })}
             >
-              + New Cluster
+              + New Clustero
             </button>
           </div>
 

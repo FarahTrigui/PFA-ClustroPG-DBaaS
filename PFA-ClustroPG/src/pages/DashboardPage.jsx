@@ -74,7 +74,7 @@ export default function MonitoringPage() {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar activeTab="Monitoring" />
+      <Sidebar />
       <div className="dashboard-content scrollable-content">
         <TopBar title="Monitoring Dashboard" />
         <div className="monitoring-container" style={{ backgroundColor: 'transparent' }}>

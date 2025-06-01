@@ -13,7 +13,59 @@ from prometheus_api_client import PrometheusConnect
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
 cluster_name = ""
+
 prom = PrometheusConnect(url="http://localhost:9090", disable_ssl=True)
+
+@app.route('/restore-cluster', methods=['POST'])
+def restore_cluster():
+    data = request.get_json()
+    clientname=data.get("clientname")
+    source_cluster = data.get("source_cluster")
+    backup_name = data.get("backup_name")
+    new_cluster_name = data.get("new_cluster_name") or f"{source_cluster}-restore-{random.randint(100000, 999999)}"
+    s3_endpoint = "http://185.211.155.163:30990/clientbackups"  # or from config
+    s3_path = f"{clientname}/{source_cluster}/{source_cluster}/"  # Assuming backup is stored under that
+
+    manifest = {
+        "apiVersion": "postgresql.cnpg.io/v1",
+        "kind": "Cluster",
+        "metadata": {
+            "name": new_cluster_name,
+            "namespace": "default"
+        },
+        "spec": {
+            "instances": 2,
+            "storage": {
+                "size": "1Gi",
+                "storageClass": "local-path"
+            },
+            "bootstrap": {
+                "recovery": {
+                    "backup": {
+                        "name": backup_name
+                    }
+                }
+            }
+        }
+    }
+    try:
+        config.load_kube_config()
+        api = kubernetes.client.CustomObjectsApi()
+        api.create_namespaced_custom_object(
+            group="postgresql.cnpg.io",
+            version="v1",
+            plural="clusters",
+            namespace="default",
+            body=manifest
+        )
+        return jsonify({"message": f"Restored as {new_cluster_name}"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
 @app.route('/metrics/cluster', methods=['GET'])
 def get_cluster_metrics():
     cluster_name = request.args.get('cluster_name')
