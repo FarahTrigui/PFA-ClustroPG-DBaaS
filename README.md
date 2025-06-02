@@ -17,3 +17,4 @@ ClustroPG is a cloud-native platform for provisioning, managing, and monitoring 
 ---
 
 ## 🧱 Architecture
+[image](https://github.com/FarahTrigui/PFA-ClustroPG-DBaaS/blob/main/our%20architecture.png)
