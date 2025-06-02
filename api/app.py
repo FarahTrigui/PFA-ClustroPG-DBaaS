@@ -1,3 +1,5 @@
+import socket
+import psycopg2
 import boto3
 from flask import Flask, render_template, request, jsonify
 import os
@@ -7,14 +9,369 @@ from flask_cors import CORS
 import kubernetes.client
 from kubernetes import config
 import subprocess
-from flask import request
-from prometheus_api_client import PrometheusConnect 
+import time
+from prometheus_api_client import PrometheusConnect
+import base64
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
-cluster_name = ""
 
-prom = PrometheusConnect(url="http://localhost:9090", disable_ssl=True)
+# Initialize Kubernetes client at module level
+try:
+    config.load_kube_config()
+    kubernetes_client = kubernetes.client.CoreV1Api()
+    prom = PrometheusConnect(url="http://localhost:9090", disable_ssl=True)
+except Exception as e:
+    print(f"Failed to initialize Kubernetes client: {str(e)}")
+    kubernetes_client = None
+
+def base64_decode(encoded_str):
+    return base64.b64decode(encoded_str).decode('utf-8')
+
+def is_port_in_use(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
+
+def find_available_port():
+    """Find an available port between 15432-15532"""
+    for port in range(15432, 15532):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(('localhost', port)) != 0:
+                return port
+    raise RuntimeError("No available ports found")
+
+
+@app.route('/get-table-structure', methods=['GET'])
+def get_table_structure():
+    cluster = request.args.get('cluster')
+    table = request.args.get('table')
+    
+    if not cluster or not table:
+        return jsonify({'error': 'Missing cluster or table name'}), 400
+
+    try:
+        # Clean up any existing port-forwards
+        subprocess.run(["pkill", "-f", f"kubectl port-forward.*{cluster}"], 
+                      stderr=subprocess.DEVNULL)
+        time.sleep(1)
+        
+        local_port = 15432 + hash(cluster) % 1000
+        service_name = f"{cluster}-rw" if not cluster.endswith("-rw") else cluster
+        
+        port_forward = subprocess.Popen(
+            ["kubectl", "port-forward", f"svc/{service_name}", f"{local_port}:5432"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        time.sleep(2)
+
+        secret_name = f"{cluster.split('-rw')[0]}-app" if cluster.endswith("-rw") else f"{cluster}-app"
+        secret = kubernetes_client.read_namespaced_secret(secret_name, "default")
+        password = base64_decode(secret.data['password'])
+
+        with psycopg2.connect(
+            host="localhost",
+            port=local_port,
+            user="app",
+            password=password,
+            dbname="app",
+            connect_timeout=5
+        ) as conn:
+            with conn.cursor() as cur:
+                # Get column information
+                cur.execute(f"""
+                    SELECT column_name, data_type 
+                    FROM information_schema.columns 
+                    WHERE table_name = '{table}';
+                """)
+                columns = [{'name': row[0], 'type': row[1]} for row in cur.fetchall()]
+                
+                return jsonify({
+                    'status': 'success',
+                    'columns': columns
+                })
+
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'troubleshooting': f"Verify table exists: kubectl exec -it {cluster}-0 -- psql -U app -c '\\d {table}'"
+        }), 500
+        
+    finally:
+        if 'port_forward' in locals() and port_forward.poll() is None:
+            port_forward.terminate()
+
+@app.route('/add-table-row', methods=['POST'])
+def add_table_row():
+    data = request.get_json()
+    cluster = data.get('cluster')
+    table = data.get('table')
+    values = data.get('values')
+    
+    if not all([cluster, table, values]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+
+    try:
+        # Clean up any existing port-forwards
+        subprocess.run(["pkill", "-f", f"kubectl port-forward.*{cluster}"], 
+                      stderr=subprocess.DEVNULL)
+        time.sleep(1)
+        
+        local_port = 15432 + hash(cluster) % 1000
+        service_name = f"{cluster}-rw" if not cluster.endswith("-rw") else cluster
+        
+        port_forward = subprocess.Popen(
+            ["kubectl", "port-forward", f"svc/{service_name}", f"{local_port}:5432"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        time.sleep(2)
+
+        secret_name = f"{cluster.split('-rw')[0]}-app" if cluster.endswith("-rw") else f"{cluster}-app"
+        secret = kubernetes_client.read_namespaced_secret(secret_name, "default")
+        password = base64_decode(secret.data['password'])
+
+        with psycopg2.connect(
+            host="localhost",
+            port=local_port,
+            user="app",
+            password=password,
+            dbname="app",
+            connect_timeout=5
+        ) as conn:
+            with conn.cursor() as cur:
+                # Build the INSERT query
+                columns = ', '.join(values.keys())
+                placeholders = ', '.join(['%s'] * len(values))
+                query = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
+                
+                cur.execute(query, list(values.values()))
+                conn.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Row added successfully',
+                    'table': table
+                })
+
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'query': query,
+            'values': values
+        }), 500
+        
+    finally:
+        if 'port_forward' in locals() and port_forward.poll() is None:
+            port_forward.terminate()
+
+
+@app.route('/create-table', methods=['POST'])
+def create_table():
+    data = request.get_json()
+    cluster = data.get('cluster')
+    table_name = data.get('table_name')
+    columns = data.get('columns')  # List of column definitions
+    
+    if not all([cluster, table_name, columns]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+
+    try:
+        # Clean up any existing port-forwards
+        subprocess.run(["pkill", "-f", f"kubectl port-forward.*{cluster}"], 
+                      stderr=subprocess.DEVNULL)
+        time.sleep(1)
+        
+        # Use a dedicated port for this cluster
+        local_port = 15432 + hash(cluster) % 1000
+        
+        # Start port-forward
+        service_name = f"{cluster}-rw" if not cluster.endswith("-rw") else cluster
+        port_forward = subprocess.Popen(
+            ["kubectl", "port-forward", f"svc/{service_name}", f"{local_port}:5432"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        time.sleep(2)
+
+        # Get credentials
+        secret_name = f"{cluster.split('-rw')[0]}-app" if cluster.endswith("-rw") else f"{cluster}-app"
+        secret = kubernetes_client.read_namespaced_secret(secret_name, "default")
+        password = base64_decode(secret.data['password'])
+
+        # Connect and create table
+        with psycopg2.connect(
+            host="localhost",
+            port=local_port,
+            user="app",
+            password=password,
+            dbname="app",
+            connect_timeout=5
+        ) as conn:
+            with conn.cursor() as cur:
+                # Create table with provided columns
+                column_defs = ", ".join(columns)
+                create_sql = f"CREATE TABLE {table_name} ({column_defs});"
+                cur.execute(create_sql)
+                conn.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': f'Table {table_name} created successfully',
+                    'table_name': table_name
+                })
+
+    except psycopg2.Error as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'sql': create_sql,
+            'troubleshooting': [
+                f"Verify permissions: kubectl exec -it {cluster}-0 -- psql -U postgres -c 'GRANT CREATE ON SCHEMA public TO app'",
+                "Check if table already exists"
+            ]
+        }), 500
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+        
+    finally:
+        if 'port_forward' in locals() and port_forward.poll() is None:
+            port_forward.terminate()
+@app.route('/get-tables', methods=['GET'])
+def get_tables():
+    cluster = request.args.get('cluster')
+    if not cluster:
+        return jsonify({'error': 'Missing cluster name', 'tables': []}), 400
+
+    try:
+        # Ensure consistent service name
+        service_name = f"{cluster}-rw" if not cluster.endswith("-rw") else cluster
+        
+        # Start port-forward
+        local_port = 15432
+        subprocess.run(["pkill", "-f", f"kubectl port-forward.*{cluster}"], 
+                      stderr=subprocess.DEVNULL)
+        
+        port_forward = subprocess.Popen(
+            ["kubectl", "port-forward", f"svc/{service_name}", f"{local_port}:5432"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        time.sleep(2)
+
+        # Get connection details
+        secret = kubernetes_client.read_namespaced_secret(f"{cluster}-app", "default")
+        password = base64_decode(secret.data['password'])
+
+        # Connect to DB
+        with psycopg2.connect(
+            host="localhost",
+            port=local_port,
+            user="app",
+            password=password,
+            dbname="app"
+        ) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT table_name FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
+                """)
+                tables = [row[0] for row in cur.fetchall()] or []
+                
+                # Always return consistent structure
+                return jsonify({
+                    'status': 'success',
+                    'tables': tables,
+                    'cluster': cluster
+                })
+
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'tables': [],
+            'cluster': cluster
+        }), 500
+        
+    finally:
+        if 'port_forward' in locals():
+            port_forward.terminate()
+
+@app.route('/get-table-data', methods=['GET'])
+def get_table_data():
+    cluster = request.args.get('cluster')
+    table = request.args.get('table')
+    
+    if not cluster or not table:
+        return jsonify({'error': 'Missing cluster or table name', 'columns': [], 'rows': []}), 400
+
+    try:
+        # Clean up any existing port-forwards
+        subprocess.run(["pkill", "-f", f"kubectl port-forward.*{cluster}"], 
+                      stderr=subprocess.DEVNULL)
+        time.sleep(1)
+        
+        # Use a dedicated port for this cluster
+        local_port = 15432 + hash(cluster) % 1000  # Unique port per cluster
+        
+        # Start port-forward
+        service_name = f"{cluster}-rw" if not cluster.endswith("-rw") else cluster
+        port_forward = subprocess.Popen(
+            ["kubectl", "port-forward", f"svc/{service_name}", f"{local_port}:5432"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        time.sleep(2)  # Wait for connection
+
+        # Get credentials
+        secret_name = f"{cluster.split('-rw')[0]}-app" if cluster.endswith("-rw") else f"{cluster}-app"
+        secret = kubernetes_client.read_namespaced_secret(secret_name, "default")
+        password = base64_decode(secret.data['password'])
+
+        # Connect through port-forward
+        with psycopg2.connect(
+            host="localhost",
+            port=local_port,
+            user="app",
+            password=password,
+            dbname="app",
+            connect_timeout=5
+        ) as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"SELECT * FROM {table} LIMIT 100;")
+                rows = cur.fetchall()
+                columns = [desc[0] for desc in cur.description] if cur.description else []
+                
+                return jsonify({
+                    'status': 'success',
+                    'columns': columns,
+                    'rows': rows,
+                    'table': table
+                })
+
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'columns': [],
+            'rows': [],
+            'table': table,
+            'troubleshooting': [
+                f"Verify table exists: kubectl exec -it {cluster}-0 -- psql -U app -c '\\dt {table}'",
+                f"Check service: kubectl get svc {service_name}",
+                f"Test manually: kubectl port-forward svc/{service_name} {local_port}:5432"
+            ]
+        }), 500
+        
+    finally:
+        if 'port_forward' in locals() and port_forward.poll() is None:
+            port_forward.terminate()
 
 @app.route('/restore-cluster', methods=['POST'])
 def restore_cluster():
