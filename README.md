@@ -4,7 +4,7 @@ ClustroPG is a fully managed PostgreSQL-as-a-Service platform deployed on Kubern
 
 This project was developed as part of our final-year engineering project at INSAT to bridge the gap between DevOps, Database Administration, and modern cloud-native practices.
 
-<img src="https://github.com/FarahTrigui/PFA-ClustroPG-DBaaS/blob/main/Capture%20d'%C3%A9cran%202025-07-24%20195912.png" alt="ClustroPG Dashboard" width="700"/>
+<img src="https://github.com/FarahTrigui/PFA-ClustroPG-DBaaS/blob/main/Capture%20d'%C3%A9cran%202025-07-24%20195912.png" alt="ClustroPG Dashboard" width="900"/>
 
 ---
 
